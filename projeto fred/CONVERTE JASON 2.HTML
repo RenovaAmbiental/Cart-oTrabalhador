@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor Excel para JSON</title>
+</head>
+<body>
+    <h1>Conversor Excel para JSON</h1>
+
+    <input type="file" id="inputFile" accept=".xlsx,.xls" onchange="handleFile(this.files)">
+    <br>
+    <br>
+    <button id="convertButton" disabled onclick="convertToJSON()">Converter para JSON</button>
+    <br>
+    <br>
+    <textarea id="jsonOutput" cols="80" rows="20" readonly></textarea>
+
+    <script>
+        function handleFile(files) {
+            const file = files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.SheetNames[0];
+                const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { raw: false });
+                // Formatar datas e remover aspas da matrícula
+                for (let i = 0; i < sheetData.length; i++) {
+                    if (sheetData[i]["MATRÍCULA"]) {
+                        sheetData[i]["MATRÍCULA"] = parseInt(sheetData[i]["MATRÍCULA"].replace(/"/g, ''), 10); // Remover aspas da matrícula
+                    }
+                    for (const key in sheetData[i]) {
+                        if (Object.prototype.hasOwnProperty.call(sheetData[i], key) && typeof sheetData[i][key] === 'string' && /\d{1,2}\/\d{1,2}\/\d{4}/.test(sheetData[i][key])) {
+                            const dateParts = sheetData[i][key].split('/');
+                            const formattedDate = `${dateParts[1].padStart(2, '0')}/${dateParts[0].padStart(2, '0')}/${dateParts[2]}`; // Trocando a ordem para "mm/dd/yyyy"
+                            sheetData[i][key] = formattedDate;
+                        }
+                    }
+                }
+                const jsonData = JSON.stringify(sheetData, null, 2);
+
+                document.getElementById('jsonOutput').value = jsonData;
+                document.getElementById('convertButton').disabled = false;
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function convertToJSON() {
+            const json = document.getElementById('jsonOutput').value;
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            // Obter o nome do arquivo sem extensão
+            const fileName = document.getElementById('inputFile').files[0].name.split('.').slice(0, -1).join('.');
+            a.download = fileName + '.json'; // Adiciona a extensão .json ao nome do arquivo
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa de Matrícula</title> 
+    <style> 
+        body { 
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif; 
+            background-image: url('https://media.istockphoto.com/id/1353941012/video/abstract-animated-color-gradients-background.jpg?s=640x640&k=20&c=yHmA9ndIiSPDrcl1p_jn1dT61ACoBw1J8KJGEuUJQyI=');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh; /* Define a altura da imagem como a altura total da viewport */
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* Fundo do conteúdo */
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra */
+            position: relative; /* Permite que a div seja posicionada relativa ao body */
+            z-index: 1; /* Define a ordem de empilhamento da div */
+        }
+        table { 
+            border-collapse: collapse;
+            width: 100%;
+            max-height: 300px; /* Definindo a altura máxima da tabela */
+            overflow-y: auto; /* Habilitando a rolagem vertical se necessário */
+        }
+        th, td { 
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .link-cell {
+            max-width: 200px; /* Definindo a largura máxima para a célula do link */
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        #matriculaInput {
+            padding: 8px;
+            margin-right: 10px;
+            width: 200px;
+        }
+        #resultadoPesquisa {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <input type="text" id="matriculaInput" placeholder="Digite a matrícula">
+        <button onclick="pesquisarMatricula()">Pesquisar</button>
+        <div id="resultadoPesquisa"></div>
+    </div>
+
+    <script>
+        function pesquisarMatricula() {
+            var matriculaInput = parseInt(document.getElementById("matriculaInput").value); // Convertendo para número
+
+            fetch('https://github.com/RenovaAmbiental/CartaoTrabalhador/blob/main/SEG1.json')
+                .then(response => response.json())
+                .then(data => {
+                    var matriculaEncontrada = false;
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i].MATRÍCULA === matriculaInput) { // Comparando como número
+                            matriculaEncontrada = true;
+                            exibirResultado(data[i]);
+                            break;
+                        }
+                    }
+                    if (!matriculaEncontrada) {
+                        exibirResultado({}); // Exibe uma linha vazia se a matrícula não for encontrada
+                    }
+                })
+                .catch(error => console.error('Erro ao buscar o arquivo JSON:', error));
+        }
+
+        function exibirResultado(dados) {
+            var resultadoPesquisa = document.getElementById("resultadoPesquisa");
+            resultadoPesquisa.innerHTML = '';
+
+            if (Object.keys(dados).length === 0) {
+                resultadoPesquisa.innerHTML = 'Matrícula não encontrada';
+            } else {
+                var table = '<table>';
+                // Tabela para os dados do colaborador
+                table += '<caption style="color: #FF0000"><b>DADOS DO COLABORADOR</b></caption>';
+                table += '<tr><th>Matrícula</th><td>' + dados['MATRÍCULA'] + '</td></tr>';
+                table += '<tr><th>Nome</th><td>' + dados['NOME'] + '</td></tr>';
+                table += '<tr><th>Função</th><td>' + dados['FUNÇÃO'] + '</td></tr>';
+                table += '<tr><th>RG</th><td>' + dados['RG'] + '</td></tr>';
+                table += '<tr><th>CPF</th><td>' + dados['CPF'] + '</td></tr>';
+                table += '<tr><th>Contrato</th><td>' + dados['CONTRATO '] + '</td></tr>';
+                table += '</table>';
+
+                // Tabela para validade dos treinamentos
+                table += '<table>';
+                table += '<caption style="color: #FF0000"><b>VALIDADE DOS TREINAMETOS</b></caption>';
+                Object.keys(dados).forEach((key, index, arr) => {
+                    if (key !== 'MATRÍCULA' && key !== 'NOME' && key !== 'FUNÇÃO' && key !== 'RG' && key !== 'CPF' && key !== 'ESCALA' && key !== 'CONTRATO ') {
+                        if (index === arr.length - 1) {
+                            // Removendo o prefixo "http://" se já estiver presente no link
+                            var link = dados[key].startsWith('http://') ? dados[key].replace('http://', '') : dados[key];
+                            table += '<tr><th>' + key + '</th><td class="link-cell"><a href="' + link + '" target="_blank">Link Pasta</a></td></tr>';
+                        } else {
+                            table += '<tr><th>' + key + '</th><td>' + dados[key] + '</td></tr>';
+                        }
+                    }
+                });
+                table += '</table>';
+
+                resultadoPesquisa.innerHTML = table;
+            }
+        }
+    </script>
+</body>
+</html>
