@@ -99,14 +99,13 @@
                 table += '<tr><th>Função</th><td>' + dados['FUNÇÃO'] + '</td></tr>';
                 table += '<tr><th>RG</th><td>' + dados['RG'] + '</td></tr>';
                 table += '<tr><th>CPF</th><td>' + dados['CPF'] + '</td></tr>';
-                table += '<tr><th>Contrato</th><td>' + dados['CONTRATO '] + '</td></tr>';
                 table += '</table>';
 
                 // Tabela para validade dos treinamentos
                 table += '<table>';
                 table += '<caption style="color: #FF0000"><b>VALIDADE DOS TREINAMETOS</b></caption>';
                 Object.keys(dados).forEach((key, index, arr) => {
-                    if (key !== 'MATRÍCULA' && key !== 'NOME' && key !== 'FUNÇÃO' && key !== 'RG' && key !== 'CPF' && key !== 'ESCALA' && key !== 'CONTRATO ') {
+                    if (key !== 'MATRÍCULA' && key !== 'NOME' && key !== 'FUNÇÃO' && key !== 'RG' && key !== 'CPF' && key !== 'ESCALA') {
                         if (index === arr.length - 1) {
                             // Removendo o prefixo "http://" se já estiver presente no link
                             var link = dados[key].startsWith('http://') ? dados[key].replace('http://', '') : dados[key];
